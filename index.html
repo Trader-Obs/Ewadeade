@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ewadeade | The Hair Store</title>
+<meta name="description" content="Ewadeade, The Hair Store. Half wigs that sit like your own hair.">
+<meta name="theme-color" content="#3A1618">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Jost:wght@300;400&display=swap" rel="stylesheet">
+<style>
+:root{--wine:#3A1618;--olive:#ADAA87;--cream:#E0DDD8;--serif:'Cormorant Garamond','Times New Roman',serif;--sans:'Jost',system-ui,sans-serif;--pad:clamp(20px,4vw,64px)}
+*,*::before,*::after{box-sizing:border-box}
+html{background:var(--wine);scroll-behavior:smooth;scrollbar-width:thin;scrollbar-color:rgba(173,170,135,.45) var(--wine)}
+body{margin:0;background:var(--wine);color:var(--cream);font-family:var(--sans);font-weight:300}
+img{display:block;max-width:100%}
+a{color:inherit;text-decoration:none}
+a:focus-visible,summary:focus-visible{outline:2px solid var(--olive);outline-offset:4px}
+::-webkit-scrollbar{width:8px}::-webkit-scrollbar-track{background:var(--wine)}
+::-webkit-scrollbar-thumb{background:rgba(173,170,135,.45);border-radius:4px}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+
+/* logo (the wordmark image extracted from your logo) */
+.logo{display:block;width:clamp(120px,13vw,176px)}
+.logo img{width:100%;height:auto}
+header{position:fixed;inset:0 0 auto 0;z-index:20;display:flex;justify-content:space-between;align-items:center;padding:calc(env(safe-area-inset-top,0px) + 20px) max(var(--pad),env(safe-area-inset-right)) 30px max(var(--pad),env(safe-area-inset-left));background:linear-gradient(rgba(58,22,24,.82),rgba(58,22,24,0));pointer-events:none}
+header a,header button{pointer-events:auto}
+.logo{position:relative;z-index:2}
+.menu{display:none;position:relative;z-index:2;width:44px;height:44px;margin-right:-10px;background:none;border:0;cursor:pointer;color:var(--olive)}
+.menu span{position:absolute;left:11px;right:11px;height:1px;background:currentColor;transition:transform .3s,top .3s}
+.menu span:nth-child(1){top:19px}.menu span:nth-child(2){top:25px}
+.menu[aria-expanded=true] span:nth-child(1){top:22px;transform:rotate(45deg)}
+.menu[aria-expanded=true] span:nth-child(2){top:22px;transform:rotate(-45deg)}
+body.lock{overflow:hidden}
+header{transition:background .3s,padding .3s}
+header.solid{background:rgba(58,22,24,.94);padding-bottom:18px;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+nav{display:flex;gap:30px;font-size:12px;letter-spacing:4px;text-transform:uppercase;color:var(--olive)}
+nav a:hover{color:var(--cream)}
+
+/* loader */
+#loader{position:fixed;inset:0;z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;background:var(--wine);transition:opacity .7s ease,visibility .7s}
+#loader.done{opacity:0;visibility:hidden}
+#loader img{width:min(78vw,620px)}
+#loader small{font-size:13px;letter-spacing:11px;text-transform:uppercase;color:var(--olive);margin-right:-11px}
+#bar{width:min(220px,56vw);height:1px;background:rgba(173,170,135,.3)}
+#bar b{display:block;height:100%;width:0;background:var(--olive);transition:width .2s}
+#msg{font-size:12px;letter-spacing:2px;color:var(--olive);text-align:center;padding:0 24px;min-height:1em}
+
+/* scroll sequence */
+#stage{position:relative}
+#pin{position:sticky;top:0;height:100vh;height:100svh;overflow:hidden;background:#21080b}
+#canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+#shade{position:absolute;inset:auto 0 0 0;height:60%;background:linear-gradient(to top,rgba(58,22,24,.86),rgba(58,22,24,.5) 45%,rgba(58,22,24,0));opacity:0;pointer-events:none}
+.cap{position:absolute;left:max(var(--pad),env(safe-area-inset-left));bottom:calc(env(safe-area-inset-bottom,0px) + 11vh);max-width:min(500px,88vw);opacity:0;pointer-events:none}
+.cap h1,.cap h2{margin:0 0 12px;font-family:var(--serif);font-weight:500;font-size:clamp(30px,4.2vw,58px);line-height:1.06;color:var(--cream)}
+.cap p{margin:0 0 26px;font-size:17px;line-height:1.7}
+.cap p:last-child{margin-bottom:0}
+.cta{position:absolute;left:0;right:0;bottom:calc(env(safe-area-inset-bottom,0px) + 5vh);text-align:center;opacity:0;pointer-events:none}
+.btn{display:inline-block;padding:18px 40px;background:var(--olive);color:var(--wine);font-size:12px;letter-spacing:4px;text-transform:uppercase;font-weight:400;transition:background .25s,color .25s}
+.btn:hover{background:var(--cream)}
+.btn.ghost{background:transparent;color:var(--olive);box-shadow:inset 0 0 0 1px var(--olive)}
+.btn.ghost:hover{background:var(--olive);color:var(--wine)}
+.btn.dark{background:var(--wine);color:var(--cream)}
+.btn.dark:hover{background:#51242a}
+.cue{position:absolute;left:0;right:0;bottom:calc(env(safe-area-inset-bottom,0px) + 3.5vh);text-align:center;font-size:11px;letter-spacing:6px;text-transform:uppercase;pointer-events:none}
+.cue i{display:block;width:1px;height:38px;margin:12px auto 0;background:var(--cream);transform-origin:top;animation:cue 2.2s ease-in-out infinite}
+@keyframes cue{0%{transform:scaleY(0);opacity:1}60%{transform:scaleY(1);opacity:1}100%{transform:scaleY(1);opacity:0}}
+@media (prefers-reduced-motion:reduce){.cue i{animation:none}}
+
+/* content bands */
+.band{position:relative;z-index:2;padding:clamp(64px,10vw,128px) max(var(--pad),env(safe-area-inset-right)) clamp(64px,10vw,128px) max(var(--pad),env(safe-area-inset-left))}
+.band.light{background:var(--cream);color:var(--wine)}
+.wrap{max-width:1200px;margin:0 auto}
+.band h2{margin:0 0 clamp(40px,5vw,64px);max-width:720px;font-family:var(--serif);font-weight:500;font-size:clamp(32px,3.8vw,50px);line-height:1.12}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:48px}
+.cols>div{border-top:1px solid currentColor;padding-top:22px}
+.cols h3{margin:0 0 10px;font-family:var(--serif);font-weight:600;font-size:26px}
+.cols p{margin:0;font-size:16px;line-height:1.75;max-width:34ch}
+.cols .n{font-family:var(--serif);font-size:44px;line-height:1;margin-bottom:14px}
+
+/* collection */
+.styles{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));gap:28px}
+.style img{width:100%;height:auto;aspect-ratio:3/4;object-fit:cover;background:#2c1012}
+.style h3{margin:16px 0 4px;font-family:var(--serif);font-weight:600;font-size:23px;color:var(--cream)}
+.style .meta{margin:0 0 14px;font-size:14px;letter-spacing:1.5px;color:var(--olive)}
+.style .order{display:inline-block;font-size:12px;letter-spacing:3px;text-transform:uppercase;color:var(--olive);border-bottom:1px solid var(--olive);padding:10px 0 4px}
+.style .order:hover{color:var(--cream);border-color:var(--cream)}
+
+/* faq */
+.faq{max-width:760px}
+.faq details{border-top:1px solid rgba(173,170,135,.35)}
+.faq details:last-child{border-bottom:1px solid rgba(173,170,135,.35)}
+.faq summary{cursor:pointer;list-style:none;padding:24px 40px 24px 0;font-family:var(--serif);font-weight:500;font-size:24px;position:relative}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{content:'+';position:absolute;right:4px;top:50%;transform:translateY(-52%);font-family:var(--sans);font-weight:300;font-size:26px;color:var(--olive)}
+.faq details[open] summary::after{content:'\2212'}
+.faq details p{margin:0 0 26px;font-size:16px;line-height:1.75;max-width:60ch}
+
+/* close */
+.close{text-align:center;padding-top:clamp(88px,12vw,150px);padding-bottom:clamp(88px,12vw,150px)}
+.close img{width:min(86vw,760px);margin:0 auto}
+.close .tag{margin-top:22px;font-size:13px;letter-spacing:11px;text-transform:uppercase;color:var(--olive);margin-right:-11px}
+.close p{margin:48px auto 32px;max-width:460px;font-size:18px;line-height:1.7}
+.close .row{display:flex;flex-wrap:wrap;gap:16px;justify-content:center}
+footer{position:relative;z-index:2;background:var(--wine);padding:36px max(var(--pad),env(safe-area-inset-right)) calc(36px + env(safe-area-inset-bottom,0px)) max(var(--pad),env(safe-area-inset-left));display:flex;flex-wrap:wrap;gap:16px 40px;justify-content:space-between;align-items:center;font-size:12px;letter-spacing:3px;text-transform:uppercase;color:var(--olive);border-top:1px solid rgba(173,170,135,.25)}
+footer .logo{width:130px}
+
+/* contact details and social icons */
+.ic{display:block;width:20px;height:20px;fill:currentColor}
+.socials{display:flex;gap:10px}
+.socials a{display:flex;align-items:center;justify-content:center;width:44px;height:44px;border:1px solid currentColor;border-radius:50%;transition:background .25s,color .25s,border-color .25s}
+footer .socials a{color:var(--olive)}
+footer .socials a:hover{background:var(--olive);border-color:var(--olive);color:var(--wine)}
+.close .socials{justify-content:center}
+.close .socials a{color:var(--wine)}
+.close .socials a:hover{background:var(--wine);color:var(--cream)}
+.info{margin:clamp(56px,8vw,88px) auto 0;max-width:900px;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:36px;padding-top:40px;border-top:1px solid rgba(58,22,24,.3);text-align:center}
+.info h3{margin:0 0 10px;font-family:var(--serif);font-weight:600;font-size:24px}
+.info p{margin:0;font-size:16px;line-height:1.75}
+.info a:hover{text-decoration:underline}
+.info .handle{margin-top:14px;font-size:15px;letter-spacing:1px}
+.foot-info{display:flex;flex-direction:column;gap:6px}
+.foot-info a:hover{color:var(--cream)}
+
+/* ---------- animation stage ---------- */
+#win{position:absolute;inset:0;overflow:hidden}
+#pin[data-mode=window]{background:linear-gradient(to bottom,var(--bg-top-dark,#3A1618) 0,var(--bg-top,#3A1618) var(--win-top,120px),var(--bg-bot,#3A1618) var(--win-bot,400px),var(--wine) calc(var(--win-bot,400px) + 90px))}
+#pin[data-mode=window] #win{-webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 10%,#000 90%,transparent 100%);mask-image:linear-gradient(to bottom,transparent 0,#000 10%,#000 90%,transparent 100%)}
+#pin[data-mode=window] #win[data-narrow]{-webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 10%,#000 90%,transparent 100%),linear-gradient(to right,transparent 0,#000 5%,#000 95%,transparent 100%);-webkit-mask-composite:source-in;mask-image:linear-gradient(to bottom,transparent 0,#000 10%,#000 90%,transparent 100%),linear-gradient(to right,transparent 0,#000 5%,#000 95%,transparent 100%);mask-composite:intersect}
+#pin[data-mode=window] .cap{bottom:auto;top:var(--cap-top,60%)}
+html[data-mode=window] header:not(.solid){background:none}
+#pin[data-mode=window] #win{inset:auto;left:50%;transform:translateX(-50%)}
+#pin[data-mode=window] #canvas{inset:auto;left:50%;top:50%;transform:translate(-50%,-50%)}
+#pin[data-mode=window] #shade{display:none}
+.cue.off i{animation-play-state:paused}
+.only-window{display:none}
+#pin[data-mode=window] .only-window{display:block}
+#pin[data-mode=window] .cta{display:none}
+.only-window h2{margin-bottom:20px}
+#pin[data-mode=window][data-land] .cap{max-width:min(560px,70vw)}
+#pin[data-mode=window][data-land] .cap h1,#pin[data-mode=window][data-land] .cap h2{font-size:clamp(26px,3.6vw,38px);margin-bottom:12px}
+#pin[data-mode=window][data-land] .cap p{display:none}
+
+/* invisible touch areas (no visual change) */
+nav a,.order,.foot-info a,.info a[href^="tel"]{position:relative}
+nav a::after,.order::after,.foot-info a::after,.info a[href^="tel"]::after,.logo::after{content:'';position:absolute;inset:-16px -10px}
+
+/* ---------- responsive ---------- */
+/* anchors land clear of the fixed header */
+@media (max-width:1024px){.band{scroll-margin-top:36px}}
+/* tablets and below */
+@media (max-width:900px){nav{gap:20px;letter-spacing:3px;font-size:11px}}
+
+/* phones and small tablets: hamburger menu */
+@media (max-width:700px){
+  .menu{display:block}
+  nav{position:fixed;inset:0;z-index:1;flex-direction:column;align-items:center;justify-content:center;gap:22px;background:rgba(58,22,24,.98);font-size:15px;letter-spacing:6px;opacity:0;visibility:hidden;transition:opacity .3s,visibility .3s}
+  nav.open{opacity:1;visibility:visible}
+  nav a{padding:12px 24px}
+}
+
+/* all phones (up to 600px) */
+@media (max-width:600px){
+  .cap{right:max(var(--pad),env(safe-area-inset-right));max-width:none;bottom:calc(env(safe-area-inset-bottom,0px) + 9vh)}
+  .cap h1,.cap h2{font-size:clamp(28px,8.2vw,40px);line-height:1.08}
+  .cap p{font-size:16px;line-height:1.6;margin-bottom:20px}
+  .btn{padding:18px 30px;letter-spacing:3.5px}
+  .cta{bottom:calc(env(safe-area-inset-bottom,0px) + 6vh)}
+  .band h2{font-size:clamp(28px,8vw,38px);margin-bottom:36px}
+  .cols{grid-template-columns:1fr;gap:34px}
+  .cols>div{padding-top:18px}
+  .cols p{max-width:none}
+  .cols .n{font-size:38px}
+  .styles{grid-template-columns:repeat(2,1fr);gap:28px 14px}
+  .style:nth-child(5){grid-column:1/-1;justify-self:center;width:calc(50% - 7px)}
+  .style h3{font-size:20px}
+  .style .meta{font-size:12.5px;letter-spacing:1px}
+  .style .order{font-size:11px;letter-spacing:2px}
+  .faq summary{font-size:21px;padding:20px 40px 20px 0;min-height:56px}
+  .close img{width:min(88vw,520px)}
+  .close .tag,#loader small{letter-spacing:7px;font-size:11px;margin-right:-7px}
+  .close p{margin:36px auto 28px;font-size:17px}
+  .close .row{flex-direction:column;align-items:stretch;max-width:340px;margin:0 auto}
+  .close .row .btn{text-align:center}
+  .info{grid-template-columns:1fr;gap:34px;padding-top:34px}
+  footer{flex-direction:column;align-items:flex-start;gap:22px}
+  footer .logo{width:140px}
+}
+
+/* small phones: 320 to 375 */
+@media (max-width:375px){
+  .logo{width:108px}
+  .cap h1,.cap h2{font-size:27px}
+  .cap p{font-size:15px;margin-bottom:16px}
+  .btn{padding:17px 24px;letter-spacing:3px}
+  .styles{gap:24px 10px}
+  .style h3{font-size:18px}
+  .style .meta{font-size:11.5px;letter-spacing:.4px}
+  .style .order{letter-spacing:1.5px}
+  .faq summary{font-size:19px}
+  .band{padding-top:56px;padding-bottom:56px}
+}
+
+/* standard phones: 376 to 430 */
+@media (min-width:376px) and (max-width:430px){
+  .cap{max-width:92%}
+}
+
+/* large phones: 431 to 600 */
+@media (min-width:431px) and (max-width:600px){
+  .cap{max-width:440px}
+  .cap h1,.cap h2{font-size:40px}
+  .styles{gap:34px 20px}
+  .style:nth-child(5){width:calc(50% - 10px)}
+  .style h3{font-size:22px}
+  .close .row{max-width:380px}
+}
+
+/* tablets: 601 to 1024 */
+@media (min-width:601px) and (max-width:1024px){
+  .cap{max-width:520px}
+  .cap h1,.cap h2{font-size:clamp(38px,5.4vw,52px)}
+  .cols{grid-template-columns:repeat(3,1fr);gap:32px}
+  .cols p{font-size:15.5px}
+  .styles{grid-template-columns:repeat(6,1fr);gap:36px 24px}
+  .style{grid-column:span 2}
+  .style:nth-child(4){grid-column:2/4}
+  .style:nth-child(5){grid-column:4/6}
+  .info{grid-template-columns:repeat(3,1fr);gap:24px}
+  .close .row{flex-wrap:wrap}
+}
+
+/* landscape phones and other very short screens */
+@media (max-height:540px) and (orientation:landscape){
+  .menu{display:block}
+  nav{position:fixed;inset:0;z-index:1;flex-direction:column;align-items:center;justify-content:center;gap:18px;background:rgba(58,22,24,.98);font-size:14px;letter-spacing:6px;opacity:0;visibility:hidden;transition:opacity .3s,visibility .3s}
+  nav.open{opacity:1;visibility:visible}
+  nav a{padding:8px 24px}
+  .cap{bottom:4vh;max-width:min(430px,52vw)}
+  .cap h1,.cap h2{font-size:clamp(22px,4vw,30px);margin-bottom:6px}
+  .cap p{display:none}
+  .btn{padding:12px 26px}
+  .cue{display:none}
+  .cta{bottom:4vh}
+  .logo{width:110px}
+  header{padding-top:calc(env(safe-area-inset-top,0px) + 10px);padding-bottom:18px}
+  .band{padding-top:56px;padding-bottom:56px}
+}
+
+/* large desktops (unchanged from the approved design) */
+@media (min-width:1800px){.wrap{max-width:1360px}.cols p{font-size:17px}}
+</style>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Store", "name": "Ewadeade", "description": "Ewadeade, The Hair Store. Half wigs that sit like your own hair.", "telephone": "+2348114130777", "sameAs": ["https://www.instagram.com/ewadeade.hair/", "https://www.tiktok.com/@ewadeade.hair", "https://www.snapchat.com/add/ewadeade.hair"], "location": [{"@type": "Place", "name": "Ewadeade Ore", "address": {"@type": "PostalAddress", "addressLocality": "Ore", "addressRegion": "Ondo", "addressCountry": "NG"}}, {"@type": "Place", "name": "Ewadeade Oghara", "address": {"@type": "PostalAddress", "addressLocality": "Oghara, Ethiope West", "addressRegion": "Delta", "addressCountry": "NG"}}]}</script>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><symbol id="i-instagram" viewBox="0 0 24 24"><path d="M7.0301.084c-1.2768.0602-2.1487.264-2.911.5634-.7888.3075-1.4575.72-2.1228 1.3877-.6652.6677-1.075 1.3368-1.3802 2.127-.2954.7638-.4956 1.6365-.552 2.914-.0564 1.2775-.0689 1.6882-.0626 4.947.0062 3.2586.0206 3.6671.0825 4.9473.061 1.2765.264 2.1482.5635 2.9107.308.7889.72 1.4573 1.388 2.1228.6679.6655 1.3365 1.0743 2.1285 1.38.7632.295 1.6361.4961 2.9134.552 1.2773.056 1.6884.069 4.9462.0627 3.2578-.0062 3.668-.0207 4.9478-.0814 1.28-.0607 2.147-.2652 2.9098-.5633.7889-.3086 1.4578-.72 2.1228-1.3881.665-.6682 1.0745-1.3378 1.3795-2.1284.2957-.7632.4966-1.636.552-2.9124.056-1.2809.0692-1.6898.063-4.948-.0063-3.2583-.021-3.6668-.0817-4.9465-.0607-1.2797-.264-2.1487-.5633-2.9117-.3084-.7889-.72-1.4568-1.3876-2.1228C21.2982 1.33 20.628.9208 19.8378.6165 19.074.321 18.2017.1197 16.9244.0645 15.6471.0093 15.236-.005 11.977.0014 8.718.0076 8.31.0215 7.0301.0839m.1402 21.6932c-1.17-.0509-1.8053-.2453-2.2287-.408-.5606-.216-.96-.4771-1.3819-.895-.422-.4178-.6811-.8186-.9-1.378-.1644-.4234-.3624-1.058-.4171-2.228-.0595-1.2645-.072-1.6442-.079-4.848-.007-3.2037.0053-3.583.0607-4.848.05-1.169.2456-1.805.408-2.2282.216-.5613.4762-.96.895-1.3816.4188-.4217.8184-.6814 1.3783-.9003.423-.1651 1.0575-.3614 2.227-.4171 1.2655-.06 1.6447-.072 4.848-.079 3.2033-.007 3.5835.005 4.8495.0608 1.169.0508 1.8053.2445 2.228.408.5608.216.96.4754 1.3816.895.4217.4194.6816.8176.9005 1.3787.1653.4217.3617 1.056.4169 2.2263.0602 1.2655.0739 1.645.0796 4.848.0058 3.203-.0055 3.5834-.061 4.848-.051 1.17-.245 1.8055-.408 2.2294-.216.5604-.4763.96-.8954 1.3814-.419.4215-.8181.6811-1.3783.9-.4224.1649-1.0577.3617-2.2262.4174-1.2656.0595-1.6448.072-4.8493.079-3.2045.007-3.5825-.006-4.848-.0608M16.953 5.5864A1.44 1.44 0 1 0 18.39 4.144a1.44 1.44 0 0 0-1.437 1.4424M5.8385 12.012c.0067 3.4032 2.7706 6.1557 6.173 6.1493 3.4026-.0065 6.157-2.7701 6.1506-6.1733-.0065-3.4032-2.771-6.1565-6.174-6.1498-3.403.0067-6.156 2.771-6.1496 6.1738M8 12.0077a4 4 0 1 1 4.008 3.9921A3.9996 3.9996 0 0 1 8 12.0077"/></symbol><symbol id="i-tiktok" viewBox="0 0 24 24"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/></symbol><symbol id="i-snapchat" viewBox="0 0 24 24"><path d="M12.206.793c.99 0 4.347.276 5.93 3.821.529 1.193.403 3.219.299 4.847l-.003.06c-.012.18-.022.345-.03.51.075.045.203.09.401.09.3-.016.659-.12 1.033-.301.165-.088.344-.104.464-.104.182 0 .359.029.509.09.45.149.734.479.734.838.015.449-.39.839-1.213 1.168-.089.029-.209.075-.344.119-.45.135-1.139.36-1.333.81-.09.224-.061.524.12.868l.015.015c.06.136 1.526 3.475 4.791 4.014.255.044.435.27.42.509 0 .075-.015.149-.045.225-.24.569-1.273.988-3.146 1.271-.059.091-.12.375-.164.57-.029.179-.074.36-.134.553-.076.271-.27.405-.555.405h-.03c-.135 0-.313-.031-.538-.074-.36-.075-.765-.135-1.273-.135-.3 0-.599.015-.913.074-.6.104-1.123.464-1.723.884-.853.599-1.826 1.288-3.294 1.288-.06 0-.119-.015-.18-.015h-.149c-1.468 0-2.427-.675-3.279-1.288-.599-.42-1.107-.779-1.707-.884-.314-.045-.629-.074-.928-.074-.54 0-.958.089-1.272.149-.211.043-.391.074-.54.074-.374 0-.523-.224-.583-.42-.061-.192-.09-.389-.135-.567-.046-.181-.105-.494-.166-.57-1.918-.222-2.95-.642-3.189-1.226-.031-.063-.052-.15-.055-.225-.015-.243.165-.465.42-.509 3.264-.54 4.73-3.879 4.791-4.02l.016-.029c.18-.345.224-.645.119-.869-.195-.434-.884-.658-1.332-.809-.121-.029-.24-.074-.346-.119-1.107-.435-1.257-.93-1.197-1.273.09-.479.674-.793 1.168-.793.146 0 .27.029.383.074.42.194.789.3 1.104.3.234 0 .384-.06.465-.105l-.046-.569c-.098-1.626-.225-3.651.307-4.837C7.392 1.077 10.739.807 11.727.807l.419-.015h.06z"/></symbol><symbol id="i-whatsapp" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></symbol></svg>
+
+<div id="loader" role="status" aria-label="Loading">
+  <img src="assets/ewadeade-wordmark.png" srcset="assets/ewadeade-wordmark-sm.png 700w, assets/ewadeade-wordmark.png 2042w" sizes="(max-width:700px) 90vw, 760px" alt="Ewadeade" width="1021" height="232">
+  <small>The Hair Store</small>
+  <div id="bar"><b></b></div>
+  <div id="msg"></div>
+</div>
+
+<header>
+  <a class="logo" href="#top" aria-label="Ewadeade, home"><img src="assets/ewadeade-wordmark.png" srcset="assets/ewadeade-wordmark-sm.png 700w, assets/ewadeade-wordmark.png 2042w" sizes="(min-width:1025px) 2042px, 180px" alt="Ewadeade" width="1021" height="232"></a>
+  <button class="menu" id="menuBtn" aria-label="Menu" aria-expanded="false" aria-controls="nav"><span></span><span></span></button>
+  <nav id="nav" aria-label="Main"><a href="#collection">Collection</a><a href="#how">How it works</a><a href="#faq">Questions</a><a href="#contact">Contact</a></nav>
+</header>
+
+<main id="top">
+  <section id="stage" aria-label="Ewadeade half wigs">
+    <div id="pin">
+      <div id="win"><canvas id="canvas" role="img" aria-label="A body wave half wig turns, then five half wigs in different colors settle into a display shelf."></canvas></div>
+      <div id="shade"></div>
+
+      <!-- clip: 0 = set-1, 1 = set-2, 2 = set-3 | in/out = position inside that clip (0 to 1) -->
+      <div class="cap" data-clip="0" data-in="-0.3" data-out="0.5">
+        <h1>Half wigs that sit like your own hair.</h1>
+        <p>Your hair stays at the front. Ewadeade covers the rest.</p>
+        <a class="btn" href="#collection">See the collection</a>
+      </div>
+      <div class="cap only-window" data-clip="0" data-in="0.58" data-out="0.97">
+        <h2>Made to disappear into your hairline.</h2>
+        <p>Skin-toned lace and dense knotting blend at the front. Adjustable straps and secure combs hold it in place.</p>
+      </div>
+      <div class="cap" data-clip="1" data-in="0.62" data-out="1.12">
+        <h2>Five half wigs. Five ways to wear them.</h2>
+        <p>Straight, spiral, deep curl, coily and loose curl, each in a color made to stand out.</p>
+      </div>
+      <div class="cap only-window" data-clip="2" data-in="0.8" data-out="1.2">
+        <h2>Your perfect hair journey ends here. Explore our full collection.</h2>
+        <a class="btn" href="#collection">Shop half wigs</a>
+      </div>
+      <div class="cta" data-clip="2" data-in="0.82" data-out="1.2">
+        <a class="btn" href="#collection">Shop half wigs</a>
+      </div>
+      <div class="cue" id="cue">Scroll<i></i></div>
+    </div>
+  </section>
+
+  <section class="band light" aria-labelledby="why">
+    <div class="wrap">
+      <h2 id="why">Natural at the hairline, full everywhere else.</h2>
+      <div class="cols">
+        <div><h3>Your hair leads</h3><p>Leave out your own front hair and let the half wig carry the volume behind it.</p></div>
+        <div><h3>On in minutes</h3><p>A soft headband holds it in place, so you can put it on and go.</p></div>
+        <div><h3>Light on your scalp</h3><p>Less cap means less weight and more airflow through a long day.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="collection" class="band" aria-labelledby="coll">
+    <div class="wrap">
+      <h2 id="coll">Five styles to start with</h2>
+      <div class="styles">
+        <article class="style"><img src="assets/style-1.jpg" alt="Straight bob half wig in black" width="337" height="464" loading="lazy" decoding="async"><h3>Straight Bob</h3><p class="meta">Black / [length] / [₦ price]</p><a class="order wa" data-msg="Hello Ewadeade, I would like to order the Straight Bob (black).">Order on WhatsApp</a></article>
+        <article class="style"><img src="assets/style-2.jpg" alt="Spiral curl half wig in brown" width="337" height="464" loading="lazy" decoding="async"><h3>Spiral Curl</h3><p class="meta">Brown / [length] / [₦ price]</p><a class="order wa" data-msg="Hello Ewadeade, I would like to order the Spiral Curl (brown).">Order on WhatsApp</a></article>
+        <article class="style"><img src="assets/style-3.jpg" alt="Deep curl half wig in honey blonde" width="337" height="464" loading="lazy" decoding="async"><h3>Deep Curl</h3><p class="meta">Blonde / [length] / [₦ price]</p><a class="order wa" data-msg="Hello Ewadeade, I would like to order the Deep Curl (blonde).">Order on WhatsApp</a></article>
+        <article class="style"><img src="assets/style-4.jpg" alt="Coily curl half wig in wine burgundy" width="337" height="464" loading="lazy" decoding="async"><h3>Coily Curl</h3><p class="meta">Wine / [length] / [₦ price]</p><a class="order wa" data-msg="Hello Ewadeade, I would like to order the Coily Curl (wine).">Order on WhatsApp</a></article>
+        <article class="style"><img src="assets/style-5.jpg" alt="Loose curl half wig in piano color, black with blonde highlights" width="337" height="464" loading="lazy" decoding="async"><h3>Loose Curl</h3><p class="meta">Piano / [length] / [₦ price]</p><a class="order wa" data-msg="Hello Ewadeade, I would like to order the Loose Curl (piano).">Order on WhatsApp</a></article>
+      </div>
+    </div>
+  </section>
+
+  <section id="how" class="band light" aria-labelledby="howh">
+    <div class="wrap">
+      <h2 id="howh">Three steps to your fit</h2>
+      <div class="cols">
+        <div><div class="n">1</div><h3>Pick your style</h3><p>Choose the length, texture and color that match your hair.</p></div>
+        <div><div class="n">2</div><h3>Send us a message</h3><p>Tell us your order on WhatsApp and share a photo of your leave-out for color matching.</p></div>
+        <div><div class="n">3</div><h3>Wear it your way</h3><p>Receive it ready to wear, or book a fitting and we will place it with you.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="faq" class="band" aria-labelledby="faqh">
+    <div class="wrap">
+      <h2 id="faqh">Questions we hear most</h2>
+      <div class="faq">
+        <details><summary>How do I choose my color?</summary><p>Send a photo of your own hair on WhatsApp in daylight and we will help you match it.</p></details>
+        <details><summary>Can I wash and style it?</summary><p>[Add your care and styling guidance here.]</p></details>
+        <details><summary>How long does delivery take?</summary><p>[Add delivery times and the areas you cover.]</p></details>
+        <details><summary>Do you offer fittings?</summary><p>You can visit us in Ore, Ondo State, or Oghara, Ethiope West, Delta State. Message us on WhatsApp to book a time.</p></details>
+      </div>
+    </div>
+  </section>
+
+  <section id="contact" class="band close light" aria-label="Contact">
+    <img src="assets/ewadeade-wordmark.png" srcset="assets/ewadeade-wordmark-sm.png 700w, assets/ewadeade-wordmark.png 2042w" sizes="(max-width:700px) 90vw, 760px" alt="Ewadeade" width="1021" height="232" loading="lazy" style="filter:brightness(.55) saturate(1.4)">
+    <div class="tag" style="color:var(--wine)">The Hair Store</div>
+    <p>Ready for your half wig? Message us and we will help you choose the right one.</p>
+    <div class="row"><a class="btn dark wa" data-msg="Hello Ewadeade, I would like help choosing a half wig.">Chat on WhatsApp</a><a class="btn ghost" style="color:var(--wine);box-shadow:inset 0 0 0 1px var(--wine)" href="#collection">Back to the collection</a></div>
+    <div class="info">
+      <div><h3>Find us</h3><p>Ore, Ondo State<br>Oghara, Ethiope West, Delta State</p></div>
+      <div><h3>Call or message</h3><p><a href="tel:+2348114130777">0811 413 0777</a><br>WhatsApp, same number</p></div>
+      <div><h3>Follow along</h3>
+        <div class="socials" style="justify-content:center">
+          <a class="wa" data-msg="Hello Ewadeade, I would like help choosing a half wig." aria-label="WhatsApp"><svg class="ic"><use href="#i-whatsapp"/></svg></a>
+          <a href="https://www.instagram.com/ewadeade.hair/" target="_blank" rel="noopener" aria-label="Instagram @ewadeade.hair"><svg class="ic"><use href="#i-instagram"/></svg></a>
+          <a href="https://www.tiktok.com/@ewadeade.hair" target="_blank" rel="noopener" aria-label="TikTok @ewadeade.hair"><svg class="ic"><use href="#i-tiktok"/></svg></a>
+          <a href="https://www.snapchat.com/add/ewadeade.hair" target="_blank" rel="noopener" aria-label="Snapchat @ewadeade.hair"><svg class="ic"><use href="#i-snapchat"/></svg></a>
+        </div>
+        <p class="handle">@ewadeade.hair</p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <a class="logo" href="#top" aria-label="Ewadeade, back to top"><img src="assets/ewadeade-wordmark.png" srcset="assets/ewadeade-wordmark-sm.png 700w, assets/ewadeade-wordmark.png 2042w" sizes="(min-width:1025px) 2042px, 140px" alt="Ewadeade" width="1021" height="232" loading="lazy"></a>
+  <div class="foot-info"><span>Ore, Ondo / Oghara, Ethiope West</span><a href="tel:+2348114130777">0811 413 0777</a></div>
+  <div class="socials">
+    <a class="wa" data-msg="Hello Ewadeade, I would like help choosing a half wig." aria-label="WhatsApp"><svg class="ic"><use href="#i-whatsapp"/></svg></a>
+    <a href="https://www.instagram.com/ewadeade.hair/" target="_blank" rel="noopener" aria-label="Instagram @ewadeade.hair"><svg class="ic"><use href="#i-instagram"/></svg></a>
+    <a href="https://www.tiktok.com/@ewadeade.hair" target="_blank" rel="noopener" aria-label="TikTok @ewadeade.hair"><svg class="ic"><use href="#i-tiktok"/></svg></a>
+    <a href="https://www.snapchat.com/add/ewadeade.hair" target="_blank" rel="noopener" aria-label="Snapchat @ewadeade.hair"><svg class="ic"><use href="#i-snapchat"/></svg></a>
+  </div>
+</footer>
+
+<script src="assets/edge-colors.js"></script>
+<script>
+(function () {
+  /* ===== CONFIG ===== */
+  const WHATSAPP = '2348114130777';  // digits only, international format
+  const CLIPS = [
+    { folder: 'set-1', count: 300 },
+    { folder: 'set-2', count: 300 },
+    { folder: 'set-3', count: 202 }
+  ];
+  const NAME = (n) => 'ezgif-frame-' + String(n).padStart(3, '0') + '.jpg';
+  /* Window mode (tall screens): how much of the frame's width is shown, by frame number.
+     0.65 frames the wig and the flying hair; 1 shows the whole shelf and the whole arch scene. */
+  const FOCUS = [[0, 0.65], [345, 0.65], [410, 1], [801, 1]];
+  const WIDE_ENOUGH = 1.45;   // screens at least this wide (width / height) use the full-bleed desktop view
+  const SMOOTH = 0.18;        // 0 to 1; lower = floatier
+  const CONCURRENCY = 10;
+  const AHEAD = 150, KEEP = 220;   // phones only: frames kept in memory either side of the playhead
+  /* ================== */
+
+  const SMALL = matchMedia('(pointer: coarse)').matches && Math.min(screen.width, screen.height) <= 900;
+
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d', { alpha: false });
+  const win = document.getElementById('win');
+  const stage = document.getElementById('stage');
+  const pin = document.getElementById('pin');
+  const loader = document.getElementById('loader');
+  const bar = document.querySelector('#bar b');
+  const msg = document.getElementById('msg');
+  const cue = document.getElementById('cue');
+  const shade = document.getElementById('shade');
+  const hdr = document.querySelector('header');
+  const overlays = [...document.querySelectorAll('[data-clip]')];
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  const starts = [], paths = [];
+  let TOTAL = 0;
+  CLIPS.forEach((c, k) => {
+    starts[k] = TOTAL;
+    for (let i = 1; i <= c.count; i++) paths.push(encodeURI(c.folder + '/' + NAME(i)));
+    TOTAL += c.count;
+  });
+
+  const images = new Array(TOTAL);
+  const loaded = new Uint8Array(TOTAL);
+  const requested = new Uint8Array(TOTAL);
+  let loadedCount = 0, active = 0, ready = false;
+  let progress = 0, target = 0, cur = 0, lastIdx = -1, lastEvict = -999;
+  let pw = innerWidth, ph = innerHeight, hdrH = 70, mode = 'cover', running = false, winMaxH = 300, winLimit = 600, capH = 200;
+
+  const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+  const smooth = (x) => { x = clamp(x, 0, 1); return x * x * (3 - 2 * x); };
+
+  function focusAt(f) {
+    for (let k = 1; k < FOCUS.length; k++) {
+      if (f <= FOCUS[k][0]) {
+        const [f0, v0] = FOCUS[k - 1], [f1, v1] = FOCUS[k];
+        return v0 + (v1 - v0) * smooth((f - f0) / (f1 - f0));
+      }
+    }
+    return FOCUS[FOCUS.length - 1][1];
+  }
+
+  /* ---------- sizing ---------- */
+  function sizeAll() {
+    pw = pin.clientWidth; ph = pin.clientHeight; hdrH = hdr.offsetHeight;
+    mode = pw / ph < WIDE_ENOUGH ? 'window' : 'cover';
+    pin.dataset.mode = mode;
+    if (mode === 'window' && pw > ph) pin.dataset.land = '1'; else delete pin.dataset.land;
+    document.documentElement.dataset.mode = mode;
+    if (mode === 'window') {                                  // room for the window plus the tallest caption beneath it
+      capH = 0;
+      overlays.forEach(el => { if (el.classList.contains('cap')) capH = Math.max(capH, el.offsetHeight); });
+      winLimit = ph - 36 - capH - 16;
+      winMaxH = Math.max(120, winLimit - hdrH - 8);
+    }
+    let dpr = Math.min(window.devicePixelRatio || 1, 2);
+    if (pw * dpr > 2560) dpr = 2560 / pw;
+    if (mode === 'cover') {
+      canvas.style.width = canvas.style.height = '';
+      win.style.top = win.style.height = win.style.width = '';
+      canvas.width = Math.round(pw * dpr);
+      canvas.height = Math.round(ph * dpr);
+    } else {
+      canvas.style.width = pw + 'px';
+      canvas.style.height = winMaxH + 'px';
+      canvas.width = Math.round(pw * dpr);
+      canvas.height = Math.round(winMaxH * dpr);
+    }
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+    const pxPerFrame = clamp(ph / 100, 5, 9);
+    stage.style.height = (TOTAL * pxPerFrame + ph) + 'px';
+    lastIdx = -1;
+    kick();
+  }
+
+  /* ---------- drawing ---------- */
+  function best(i) {
+    if (loaded[i]) return images[i];
+    const lim = SMALL ? AHEAD : TOTAL;
+    for (let r = 1; r < lim; r++) {
+      if (i - r >= 0 && loaded[i - r]) return images[i - r];
+      if (i + r < TOTAL && loaded[i + r]) return images[i + r];
+    }
+    return null;
+  }
+
+  function paintCover(img) {
+    const cw = canvas.width, ch = canvas.height;
+    const s = Math.max(cw / img.naturalWidth, ch / img.naturalHeight);
+    const w = img.naturalWidth * s, h = img.naturalHeight * s;
+    ctx.drawImage(img, (cw - w) / 2, (ch - h) / 2, w, h);
+  }
+
+  /* Tall screens: the frame is shown whole, at its own aspect ratio, inside a window.
+     Nothing is stretched, blurred or filled in; the window simply grows and shrinks with the shot. */
+  const WINE = [58, 22, 24];
+  let cTop = [58, 22, 24], cBot = [58, 22, 24];
+  const EC = window.EDGE_COLORS;           // precomputed, so nothing has to read pixels (that is blocked for files opened from a folder)
+  const mix = (c, t) => c.map((v, i) => Math.round(v + (WINE[i] - v) * t));
+  const rgb = (c) => 'rgb(' + c.join(',') + ')';
+
+  /* The site takes its colours from the frame: the page above and below the animation is painted
+     with the colours found along the frame's top and bottom edges, so the shot dissolves into the page. */
+  function sampleEdges(f) {
+    if (!EC || EC.length < (f + 1) * 6) return;
+    const o = f * 6;
+    cTop = cTop.map((v, i) => v + (EC[o + i] - v) * 0.5);   // eases between scenes instead of flickering
+    cBot = cBot.map((v, i) => v + (EC[o + 3 + i] - v) * 0.5);
+  }
+
+  function paintWindow(img, f) {
+    const iw = img.naturalWidth, ih = img.naturalHeight;
+    let dh = Math.min(ih * pw / (iw * focusAt(f)), winMaxH);
+    dh = Math.round(dh);
+    const dw = iw * dh / ih;
+    const avail = ph - 36 - hdrH, group = dh + 16 + capH;
+    const top = Math.round(hdrH + 8 + 0.55 * Math.max(0, avail - group - 8));     // sits high, captions directly beneath
+    win.style.height = dh + 'px';
+    win.style.width = Math.min(pw, Math.round(dw)) + 'px';
+    win.style.top = top + 'px';
+    if (dw < pw - 1) win.dataset.narrow = '1'; else delete win.dataset.narrow;
+    sampleEdges(f);
+    const ps = pin.style, rs = document.documentElement.style;
+    ps.setProperty('--win-top', top + 'px');
+    ps.setProperty('--win-bot', (top + dh) + 'px');
+    ps.setProperty('--cap-top', (top + dh + 16) + 'px');
+    ps.setProperty('--bg-top', rgb(cTop.map(Math.round)));
+    ps.setProperty('--bg-top-dark', rgb(mix(cTop.map(Math.round), 0.55)));
+    ps.setProperty('--bg-bot', rgb(mix(cBot.map(Math.round), 0.7)));
+    const k = canvas.width / pw;
+    ctx.fillStyle = '#3A1618';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(img, (canvas.width - dw * k) / 2, (canvas.height - dh * k) / 2, dw * k, dh * k);
+  }
+
+  function paint(img, f) {
+    if (!img || !img.naturalWidth) return;
+    if (mode === 'cover') paintCover(img); else paintWindow(img, f);
+  }
+
+  /* ---------- loading ---------- */
+  function nextToLoad() {
+    const head = clamp(Math.round(target), 0, TOTAL - 1);
+    const lim = SMALL ? AHEAD : TOTAL;
+    for (let r = 0; r < lim; r++) {
+      if (head + r < TOTAL && !requested[head + r]) return head + r;
+      if (head - r >= 0 && !requested[head - r]) return head - r;
+    }
+    return -1;
+  }
+
+  function pump() {
+    while (active < CONCURRENCY) {
+      const i = nextToLoad();
+      if (i === -1) break;
+      requested[i] = 1; active++;
+      const img = new Image();
+      img.decoding = 'async';
+      img.onload = () => { active--; loaded[i] = 1; done(); };
+      img.onerror = () => { active--; if (i === 0 && !ready) msg.textContent = 'Frames not found. Check the set-1, set-2 and set-3 folders next to index.html.'; done(false); };
+      img.src = paths[i];
+      images[i] = img;
+    }
+  }
+
+  function done(ok = true) {
+    loadedCount++;
+    bar.style.width = Math.min(100, loadedCount / (SMALL ? AHEAD : TOTAL) * 100) + '%';
+    if (!ready && ok && loadedCount >= Math.min(24, TOTAL)) { ready = true; loader.classList.add('done'); }
+    lastIdx = -1;
+    pump(); kick();
+  }
+
+  function evict(idx) {            // phones only: let far-away frames go so memory stays low
+    for (let i = 0; i < TOTAL; i++) {
+      if (requested[i] && Math.abs(i - idx) > KEEP) { images[i] = null; loaded[i] = 0; requested[i] = 0; }
+    }
+  }
+
+  /* ---------- captions, scroll progress, loop ---------- */
+  function updateOverlays(p) {
+    let strongest = 0;
+    overlays.forEach(el => {
+      const c = +el.dataset.clip;
+      const a = (starts[c] + el.dataset.in * CLIPS[c].count) / TOTAL;
+      const b = (starts[c] + el.dataset.out * CLIPS[c].count) / TOTAL;
+      const o = smooth((p - a) / 0.03) * smooth((b - p) / 0.03);
+      el.style.opacity = o;
+      el.style.pointerEvents = o > 0.5 ? 'auto' : 'none';
+      strongest = Math.max(strongest, o);
+    });
+    const cueO = 1 - smooth(p / 0.025);
+    cue.style.opacity = cueO;
+    cue.classList.toggle('off', cueO < 0.02);
+    shade.style.opacity = Math.max(strongest, cueO);
+  }
+
+  function readProgress() {
+    const max = stage.offsetHeight - ph;
+    const y = clamp(-stage.getBoundingClientRect().top, 0, max);
+    progress = max > 0 ? y / max : 0;
+    target = progress * (TOTAL - 1);
+  }
+
+  function loop() {
+    readProgress();
+    cur += (target - cur) * (reduce ? 1 : SMOOTH);
+    if (Math.abs(target - cur) < 0.02) cur = target;
+    const idx = Math.round(cur);
+    if (idx !== lastIdx) {
+      paint(best(idx), idx);
+      lastIdx = idx;
+      if (SMALL && Math.abs(idx - lastEvict) > 40) { lastEvict = idx; evict(idx); }
+    }
+    updateOverlays(progress);
+    if (Math.abs(target - cur) > 0.02) requestAnimationFrame(loop); else running = false;   // idle = no work
+  }
+  function kick() { if (!running) { running = true; requestAnimationFrame(loop); } }
+
+  function headerState() {
+    const end = stage.offsetTop + stage.offsetHeight - ph;
+    hdr.classList.toggle('solid', scrollY > end + 10);
+  }
+
+  /* ---------- menu ---------- */
+  const menuBtn = document.getElementById('menuBtn'), nav = document.getElementById('nav');
+  function setMenu(open) {
+    nav.classList.toggle('open', open);
+    menuBtn.setAttribute('aria-expanded', open);
+    document.body.classList.toggle('lock', open);
+  }
+  menuBtn.addEventListener('click', () => setMenu(menuBtn.getAttribute('aria-expanded') !== 'true'));
+  nav.querySelectorAll('a').forEach(a => a.addEventListener('click', () => setMenu(false)));
+  addEventListener('keydown', e => { if (e.key === 'Escape') setMenu(false); });
+  matchMedia('(min-width: 701px) and (min-height: 541px)').addEventListener('change', e => { if (e.matches) setMenu(false); });
+
+  /* ---------- WhatsApp links ---------- */
+  document.querySelectorAll('a.wa').forEach(a => {
+    const t = a.dataset.msg || 'Hello Ewadeade, I would like to order a half wig.';
+    a.href = 'https://wa.me/' + WHATSAPP + '?text=' + encodeURIComponent(t);
+    a.target = '_blank'; a.rel = 'noopener';
+  });
+
+  /* ---------- start ---------- */
+  if ('ResizeObserver' in window) new ResizeObserver(() => { sizeAll(); headerState(); }).observe(pin);
+  else addEventListener('resize', sizeAll, { passive: true });
+  addEventListener('scroll', () => { pump(); headerState(); kick(); }, { passive: true });
+  sizeAll();
+  ctx.fillStyle = '#21080b'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+  readProgress(); cur = target;
+  pump(); kick();
+})();
+</script>
+</body>
+</html>
